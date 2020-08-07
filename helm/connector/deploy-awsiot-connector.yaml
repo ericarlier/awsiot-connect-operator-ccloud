@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: aws-iot-mqtt-connector-deploy
+spec:
+  ttlSecondsAfterFinished: 5
+  template:
+    spec:
+      volumes:
+      - name: config-volume
+        secret:
+          secretName: awsiot-connector-config
+      containers:
+      - name: aws-iot-mqtt-connector-deploy
+        image: cnfldemos/alpine-curl:3.10.2_7.65.1
+        args: [
+          "-s",
+          "-X", "POST",
+          "-H", "Content-Type: application/json",
+          "--data", "@/etc/conf/aws-iot-mqtt-connector.json",
+          "http://connectors:8083/connectors"
+        ]
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/conf
+      restartPolicy: Never
+  backoffLimit: 1

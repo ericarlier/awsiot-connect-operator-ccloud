@@ -1,0 +1,151 @@
+## Overriding values for Chart's values.yaml for AWS
+##
+global:
+  provider:
+    name: [PROVIDER]
+    region: [REGION]
+    kubernetes:
+       deployment:
+         ## If kubernetes is deployed in multi zone mode then specify availability-zones as appropriate
+         ## If kubernetes is deployed in single availability zone then specify appropriate values
+         zones:
+          - [ZONE-1]
+          - [ZONE-2]
+          - [ZONE-3]
+    ## Docker registry endpoint where Confluent Images are available.
+    ##
+    registry:
+      fqdn: docker.io
+      credential:
+        required: false
+  sasl:
+    plain:
+      username: [CCLOUD_KEY]
+      password: [CCLOUD_SECRET]
+  authorization:
+    rbac:
+      enabled: false
+    simple:
+      enabled: false
+    superUsers: []
+  dependencies:
+    mds:
+      endpoint: ""
+      publicKey: ""
+  initContainer:
+    image:
+      tag: 5.5.1.0-ubi8
+    
+##Operator
+operator:
+  image:
+    tag: 0.364.0-ubi8
+    
+
+## Connect Cluster
+##
+connect:
+  name: connectors
+  image:
+    repository: [your_dockerhub_account]/connectors
+    tag: [your_tag]  
+  replicas: 2
+  resources:
+    ## It is recommended to set both resource requests and limits.
+    ## If not configured, kubernetes will set cpu/memory defaults.
+    ## Reference: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+    requests:
+      cpu: 200m
+      memory: 2Gi
+    limits: {}
+  ## JVM configuration
+  jvmConfig:
+    heapSize: 2G
+    tls:
+    enabled: false
+    ## "" for none, "tls" for mutual auth
+    authentication:
+      type: ""
+    fullchain: |-
+    privkey: |-
+    cacerts: |-
+  loadBalancer:
+    enabled: false
+    domain: ""
+  dependencies:
+    kafka:
+      bootstrapEndpoint: [CCLOUD_BOOTSTRAP]
+      brokerCount: 3
+      username: [CCLOUD_KEY]
+      password: [CCLOUD_SECRET]     
+      tls:
+        enabled: true
+        internal: true
+        authentication:
+          type: plain
+    schemaRegistry:
+      enabled: false
+      
+controlcenter:
+  name: controlcenter
+  license: ""
+  ##
+  ## C3 dependencies
+  ##
+  dependencies:
+    c3KafkaCluster:
+      bootstrapEndpoint: [CCLOUD_BOOTSTRAP]
+      zookeeper:
+        endpoint: zookeeper:2181
+      tls:
+        enabled: true
+        internal: true
+        authentication:
+          type: "plain"
+    connectCluster:
+      enabled: true
+      url: http://connectors:8083
+    ksql:
+      enabled: false
+      url: http://ksql:9088
+    schemaRegistry:
+      enabled: false
+      url: http://schemaregistry:8081
+  ##
+  ## C3 External Access
+  ##
+  loadBalancer:
+    enabled: false
+    domain: ""
+  ##
+  ## TLS configuration
+  ##
+  tls:
+    enabled: false
+    internal: false
+    authentication:
+      type: "plain"
+      fullchain: |-
+      privkey: |-
+      cacerts: |-
+  ##
+  ## C3 authentication
+  ##
+  auth:
+    basic:
+      enabled: true
+      ##
+      ## map with key as user and value as password and role
+      property:
+        admin: admin,Administrators
+        disallowed: no_access
+  jvmConfig:
+    heapSize: 2048M
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2048Mi
+  image:
+    tag: 5.5.1.0-ubi8
+  disableHostPort: true      
+

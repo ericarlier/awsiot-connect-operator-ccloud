@@ -1,0 +1,9 @@
+MyEKSKey.pub
+MyEKSKeyPair.pem
+helm/connector/.helmignore
+helm/connector/awsiot-connector-config-secrets.yaml
+helm/connector/awsiot-secrets.yaml
+helm/connector/ccloud-cluster-secrets.yaml
+thing/
+operator/
+helm/connector/connect-cluster.yaml
